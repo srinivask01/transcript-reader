@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    "mammoth",
+    "@langchain/core",
+    "@langchain/anthropic",
+  ],
+  poweredByHeader: false,
 };
 
 export default nextConfig;

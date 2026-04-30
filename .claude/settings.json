@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npm run db:generate 2>&1",
+            "if": "Edit(prisma/schema.prisma)|Write(prisma/schema.prisma)",
+            "timeout": 60,
+            "statusMessage": "Regenerating Prisma client and clearing .next cache..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "cd \"$CLAUDE_PROJECT_DIR\" && npm test 2>&1",
+        "timeout": 120,
+        "statusMessage": "Running test suite..."
+      }
+    ]
+  }
+}
