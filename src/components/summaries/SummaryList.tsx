@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import type { Summary } from '@/types'
 import type { AnalysisResult, FeatureRow, FeatureStatus } from '@/types'
+import { calculateCost, formatCost } from '@/lib/ai/pricing'
+import type { TokenUsage } from '@/lib/ai/pricing'
 
 interface Props {
   summaries: Summary[]
@@ -149,6 +151,32 @@ function PromptViewer({ summary }: { summary: Summary }) {
   )
 }
 
+function CostBadge({ summary }: { summary: Summary }) {
+  const { inputTokens, cacheWriteTokens, cacheReadTokens, outputTokens, llmCallCount, modelUsed } = summary
+
+  if (inputTokens == null) {
+    return <span className="text-xs text-gray-400">Not Applicable</span>
+  }
+
+  const usage: TokenUsage = {
+    inputTokens:      inputTokens,
+    cacheWriteTokens: cacheWriteTokens ?? 0,
+    cacheReadTokens:  cacheReadTokens  ?? 0,
+    outputTokens:     outputTokens     ?? 0,
+  }
+
+  const costResult = calculateCost(modelUsed ?? '', usage)
+  const costLabel  = formatCost(costResult, llmCallCount ?? 1)
+  const tokenLabel = `${inputTokens.toLocaleString()} in / ${cacheWriteTokens ?? 0} cw / ${cacheReadTokens ?? 0} cr / ${(outputTokens ?? 0).toLocaleString()} out`
+
+  return (
+    <div className="text-right">
+      <p className="text-xs font-medium text-gray-600">{costLabel}</p>
+      <p className="text-xs text-gray-400">{tokenLabel}</p>
+    </div>
+  )
+}
+
 function AnalysisCard({ summary }: { summary: Summary }) {
   const result = summary.analysisResult as unknown as AnalysisResult
 
@@ -169,6 +197,7 @@ function AnalysisCard({ summary }: { summary: Summary }) {
     <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-6">
       <div className="flex items-start justify-between">
         <p className="text-xs text-gray-400">Generated {new Date(summary.createdAt).toLocaleString()}</p>
+        <CostBadge summary={summary} />
       </div>
 
       {/* Transcript summary */}

@@ -1,6 +1,7 @@
 import { ChatAnthropic } from '@langchain/anthropic'
 import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import type { AnalysisResult, TranscriptInput } from '@/types'
+import type { TokenUsage } from '@/lib/ai/pricing'
 
 const SYSTEM_PROMPT = `You are an AI ecommerce requirements analyst. Your task is to analyze one or more call transcripts and generate a structured list of key ecommerce implementation features.
 
@@ -181,6 +182,8 @@ export interface SummarizeResult {
   data: AnalysisResult
   systemPrompt: string
   userPrompt: string
+  usage: TokenUsage
+  llmCallCount: number
 }
 
 function extractContent(response: { content: unknown }): string {
@@ -218,8 +221,30 @@ export async function summarizeTranscripts(
     content: [{ type: 'text', text: userPrompt, cache_control: { type: 'ephemeral' } }],
   })
 
+  function extractUsage(response: { usage_metadata?: { input_tokens?: number; output_tokens?: number; input_token_details?: { cache_creation?: number; cache_read?: number } } }): TokenUsage {
+    const meta = response.usage_metadata ?? {}
+    const details = meta.input_token_details ?? {}
+    return {
+      inputTokens:      meta.input_tokens      ?? 0,
+      cacheWriteTokens: details.cache_creation  ?? 0,
+      cacheReadTokens:  details.cache_read       ?? 0,
+      outputTokens:     meta.output_tokens      ?? 0,
+    }
+  }
+
+  function addUsage(a: TokenUsage, b: TokenUsage): TokenUsage {
+    return {
+      inputTokens:      a.inputTokens      + b.inputTokens,
+      cacheWriteTokens: a.cacheWriteTokens + b.cacheWriteTokens,
+      cacheReadTokens:  a.cacheReadTokens  + b.cacheReadTokens,
+      outputTokens:     a.outputTokens     + b.outputTokens,
+    }
+  }
+
   const response = await llm.invoke([systemMessage, humanMessage])
   const content = extractContent(response)
+  let usage = extractUsage(response)
+  let llmCallCount = 1
 
   let json: string
   try {
@@ -235,8 +260,10 @@ export async function summarizeTranscripts(
       }),
     ])
     json = extractJson(extractContent(retryResponse))
+    usage = addUsage(usage, extractUsage(retryResponse))
+    llmCallCount = 2
   }
 
   const data = JSON.parse(json) as AnalysisResult
-  return { data, systemPrompt: activeSystemPrompt, userPrompt }
+  return { data, systemPrompt: activeSystemPrompt, userPrompt, usage, llmCallCount }
 }

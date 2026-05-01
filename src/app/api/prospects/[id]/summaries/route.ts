@@ -50,7 +50,7 @@ export async function POST(
         const transcriptLabel = `${inputs.length} transcript${inputs.length !== 1 ? 's' : ''}`
         controller.enqueue(emit('progress', { step: `Sending ${transcriptLabel} to ${modelName}…` }))
 
-        const { data, systemPrompt, userPrompt } = await summarizeTranscripts(
+        const { data, systemPrompt, userPrompt, usage, llmCallCount } = await summarizeTranscripts(
           inputs,
           modelName,
           customSystemPrompt,
@@ -66,6 +66,11 @@ export async function POST(
             systemPrompt,
             userPrompt,
             modelUsed: modelName,
+            inputTokens:      usage.inputTokens,
+            cacheWriteTokens: usage.cacheWriteTokens,
+            cacheReadTokens:  usage.cacheReadTokens,
+            outputTokens:     usage.outputTokens,
+            llmCallCount,
           },
         })
 

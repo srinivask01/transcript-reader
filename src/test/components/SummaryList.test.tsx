@@ -42,7 +42,12 @@ const mockSummary: Summary = {
   analysisResult: mockAnalysisResult,
   systemPrompt: null,
   userPrompt: null,
-  modelUsed: null,
+  modelUsed: 'claude-haiku-4-5-20251001',
+  inputTokens: 12450,
+  cacheWriteTokens: 450,
+  cacheReadTokens: 8200,
+  outputTokens: 3210,
+  llmCallCount: 1,
 }
 
 describe('SummaryList', () => {
@@ -94,5 +99,23 @@ describe('SummaryList', () => {
     const legacy = { ...mockSummary, id: 'sum-legacy', analysisResult: {} }
     render(<SummaryList summaries={[legacy as unknown as Summary]} />)
     expect(screen.getByText(/Analysis data is not available/)).toBeInTheDocument()
+  })
+
+  it('renders cost and token counts when token data is present', () => {
+    render(<SummaryList summaries={[mockSummary]} />)
+    expect(screen.getByText(/\$0\.\d{4}/)).toBeInTheDocument()
+    expect(screen.getByText(/12,450 in/)).toBeInTheDocument()
+  })
+
+  it('renders Not Applicable when token data is null', () => {
+    const noTokens = { ...mockSummary, id: 'sum-no-tokens', inputTokens: null, cacheWriteTokens: null, cacheReadTokens: null, outputTokens: null, llmCallCount: null }
+    render(<SummaryList summaries={[noTokens]} />)
+    expect(screen.getByText('Not Applicable')).toBeInTheDocument()
+  })
+
+  it('shows call count suffix when llmCallCount is greater than 1', () => {
+    const retried = { ...mockSummary, id: 'sum-retry', llmCallCount: 2 }
+    render(<SummaryList summaries={[retried]} />)
+    expect(screen.getByText(/\(2 calls\)/)).toBeInTheDocument()
   })
 })

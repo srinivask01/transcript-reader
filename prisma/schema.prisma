@@ -28,14 +28,19 @@ model Transcript {
 }
 
 model Summary {
-  id             String   @id @default(cuid())
-  prospectId     String
-  analysisResult Json
-  systemPrompt   String?
-  userPrompt     String?
-  modelUsed      String?
-  createdAt      DateTime @default(now())
-  prospect       Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  prospectId       String
+  analysisResult   Json
+  systemPrompt     String?
+  userPrompt       String?
+  modelUsed        String?
+  inputTokens      Int?
+  cacheWriteTokens Int?
+  cacheReadTokens  Int?
+  outputTokens     Int?
+  llmCallCount     Int?
+  createdAt        DateTime @default(now())
+  prospect         Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
 }
 
 model AppSettings {
