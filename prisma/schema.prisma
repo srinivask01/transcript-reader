@@ -28,20 +28,25 @@ model Transcript {
 }
 
 model Summary {
-  id           String   @id @default(cuid())
-  prospectId   String
-  keyTopics    Json
-  actionItems  Json
-  decisions    Json
-  nextSteps    Json
-  systemPrompt String?
-  userPrompt   String?
-  modelUsed    String?
-  createdAt    DateTime @default(now())
-  prospect     Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  prospectId     String
+  analysisResult Json
+  systemPrompt   String?
+  userPrompt     String?
+  modelUsed      String?
+  createdAt      DateTime @default(now())
+  prospect       Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
 }
 
 model AppSettings {
   id       String @id @default(cuid())
   llmModel String @default("claude-haiku-4-5-20251001")
+}
+
+model SystemPromptVersion {
+  id        String   @id @default(cuid())
+  text      String
+  notes     String?
+  status    String   @default("inactive")
+  createdAt DateTime @default(now())
 }

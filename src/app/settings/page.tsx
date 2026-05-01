@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface SettingsData {
   llmModel: string
@@ -71,6 +72,19 @@ export default function SettingsPage() {
         >
           {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Settings'}
         </button>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-700">System Prompt</p>
+          <p className="text-xs text-gray-400 mt-0.5">Customize the instructions sent to the AI when generating summaries.</p>
+        </div>
+        <Link
+          href="/settings/prompt"
+          className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        >
+          Edit →
+        </Link>
       </div>
     </div>
   )

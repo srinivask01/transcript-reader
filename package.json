@@ -1,6 +1,6 @@
 {
   "name": "transcript-reader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3002",
@@ -44,6 +44,7 @@
     "eslint-config-next": "16.2.4",
     "jsdom": "^29.1.1",
     "prisma": "^7.8.0",
+    "puppeteer": "^24.42.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
